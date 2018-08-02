@@ -1,11 +1,14 @@
 resource "digitalocean_droplet" "matrix-server" {
-  image              = ""
+  image              = "debian-8-x64"
   name               = "matrix-server"
   region             = "${var.region}"
   size               = "1gb"
   ipv6               = true
   private_networking = true
-  tags               = ["matrix-server"]
+
+  ssh_keys = [
+    "${var.ssh_fingerprint}",
+  ]
 
   connection {
     user        = "root"
@@ -16,14 +19,13 @@ resource "digitalocean_droplet" "matrix-server" {
 
   provisioner "file" {
     source      = "matrix-bootstrap.sh"
-    destination = "/tmp"
+    destination = "/tmp/matrix-bootstrap.sh"
   }
 
   provisioner "remote-exec" {
     inline = [
       "chmod +x /tmp/matrix-bootstrap.sh",
       "/tmp/matrix-bootstrap.sh ${var.host} ${var.link_preview}",
-      "/tmp/",
     ]
   }
 }

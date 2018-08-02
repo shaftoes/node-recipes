@@ -1,9 +1,3 @@
-variable "host" {
-  type        = "string"
-  default     = "nodefault"
-  description = "TODO"
-}
-
 variable "region" {
   type        = "string"
   default     = "tor1"
