@@ -1,0 +1,68 @@
+database:
+  name: psycopg2
+  args:
+    user: synapse_user
+    password: synapse_user
+    database: synapse
+    host: localhost
+    cp_min: 5
+    cp_max: 10
+
+allow_guest_access: True
+enable_registration: True
+enable_group_creation: True
+url_preview_enabled: True
+url_preview_ip_range_blacklist:
+- '127.0.0.0/8'
+- '10.0.0.0/8'
+- '172.16.0.0/12'
+- '192.168.0.0/16'
+
+synctl_cache_factor: 0.02
+server_name: ${server_name}
+
+listeners:
+  # Main HTTPS listener
+  # For when matrix traffic is sent directly to synapse.
+  - port: 8448 # The port to listen for HTTPS requests on.
+
+    # Local interface to listen on.
+    # The empty string will cause synapse to listen on all interfaces.
+    bind_address: ''
+    # includes IPv6 -> src https://github.com/matrix-org/synapse/issues/1886
+    # bind_address: '::'
+
+    # This is a 'http' listener, allows us to specify 'resources'.
+    type: http
+    tls: true
+
+    # Use the X-Forwarded-For (XFF) header as the client IP and not the
+    # actual client IP.
+    x_forwarded: false
+
+    # List of HTTP resources to serve on this listener.
+    resources:
+      - names: [client] # The client-server APIs, both v1 and v2
+        # Should synapse compress HTTP responses to clients that support it?
+        # This should be disabled if running synapse behind a load balancer
+        # that can do automatic compression.
+        compress: true
+
+      - names: [federation]  # Federation APIs
+        compress: false
+
+  # Unsecure HTTP listener,
+  # For when matrix traffic passes through loadbalancer that unwraps TLS.
+  - port: 8008
+    tls: false
+    bind_address: '127.0.0.1'
+    type: http
+
+    x_forwarded: true
+
+    resources:
+      - names: [client]
+        compress: true
+      - names: [federation]
+        compress: false
+
